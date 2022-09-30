@@ -34,6 +34,8 @@ float comprimento(Tour t)
     {
         comprimento += distancia(t.visitadas[i], t.visitadas[i + 1]);
     }
+    // voltar para a cidade inicial
+    comprimento += distancia(t.visitadas[t.quantidade - 1], t.visitadas[0]);
     return comprimento;
 }
 
