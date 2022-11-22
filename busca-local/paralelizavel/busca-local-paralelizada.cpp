@@ -32,15 +32,15 @@ float distancia(Cidade a, Cidade b)
 }
 
 // funcao que calcula o comprimento de um tour
-float comprimento(Tour t)
+float comprimento(vector<Cidade> cidades, int quantidade)
 {
     float comprimento = 0;
-    for (int i = 0; i < t.quantidade - 1; i++)
+    for (int i = 0; i < quantidade - 1; i++)
     {
-        comprimento += distancia(t.visitadas[i], t.visitadas[i + 1]);
+        comprimento += distancia(cidades[i], cidades[i + 1]);
     }
     // voltar para a cidade inicial
-    comprimento += distancia(t.visitadas[t.quantidade - 1], t.visitadas[0]);
+    comprimento += distancia(cidades[quantidade - 1], cidades[0]);
     return comprimento;
 }
 
@@ -62,17 +62,17 @@ void retornaAleatoria(vector<Cidade> cidades, Tour &tour)
     // retorna uma solução aleatória
     random_shuffle(cidades.begin(), cidades.end());
     tour.visitadas = cidades;
-    tour.comprimento = comprimento(tour);
+    tour.comprimento = comprimento(tour.visitadas, tour.quantidade);
 }
 
 int main(){
     //vector<Tour> solucoes;
-    Tour tour;
-    cin >> tour.quantidade; // numero de cidades a serem visitadas
+    Tour t, melhorTour;
+    cin >> t.quantidade; // numero de cidades a serem visitadas
     vector<Cidade> cidades; // lista de todas as cidades
 
     // leitura das cidades
-    for (int i = 0; i < tour.quantidade; i++)
+    for (int i = 0; i < t.quantidade; i++)
     {
         Cidade cidade;
         cidade.indice = i;
@@ -80,35 +80,45 @@ int main(){
         cidades.push_back(cidade);
     }
 
+    int melhorComprimentoThread;
+    float melhorComprimento = comprimento(cidades, t.quantidade);
+
     // Gero 10N solucoes vizinhas
     // se for possível inverter a ordem de visitação de duas cidades e isso melhorar a solução então faça a troca
     // se for possivel trocar a ordem e melhorar a solução, faça a troca
     // paralelizando a geração das soluções
-    #pragma omp parallel
+    #pragma omp parallel private(melhorComprimentoThread)
     {
     #pragma omp parallel for
-        for (int i = 0; i < 10 * tour.quantidade; i++)
+        for (int i = 0; i < 10 * t.quantidade; i++)
         {
+            Tour tour;
+            tour.quantidade = t.quantidade;
             retornaAleatoria(cidades, tour);
             for (int l=0; l<tour.quantidade; l++){
                 for (int r=0; r<tour.quantidade; r++){
                     if (l != r){
                         // Inverte a ordem de visitacao de duas cidades
                         swap(tour.visitadas[l], tour.visitadas[r]);
-                        float comp = comprimento(tour);
+                        float comp = comprimento(tour.visitadas, tour.quantidade);
                         // Verifico se o comprimento é menor que o comprimento do tour atual
-                        #pragma omp critical
-                        {
-                            if (comp < tour.comprimento){
-                                // Se for, atualizo o comprimento
-                                // cout << "Melhorou o comprimento de " << tour.comprimento << " para " << comp << endl;
-                                tour.comprimento = comp;
-                            } else {
-                                // Se não for, desfaco a troca
-                                swap(tour.visitadas[l], tour.visitadas[r]);
-                            }
+                        if (comp < tour.comprimento){
+                            // Se for, atualizo o comprimento
+                            // cout << "Melhorou o comprimento de " << tour.comprimento << " para " << comp << endl;
+                            tour.comprimento = comp;
+                        } else {
+                            // Se não for, desfaco a troca
+                            swap(tour.visitadas[l], tour.visitadas[r]);
                         }
+                        
                     }
+                }
+            }
+            #pragma omp critical
+            {
+                if (tour.comprimento < melhorComprimento){
+                    melhorComprimento = tour.comprimento;
+                    melhorTour = tour;
                 }
             }
 
@@ -122,6 +132,6 @@ int main(){
     
 
     // output
-    returnOutput(tour);
+    returnOutput(melhorTour);
     return 0;
 }
