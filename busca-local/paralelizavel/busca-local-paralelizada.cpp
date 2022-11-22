@@ -80,14 +80,13 @@ int main(){
         cidades.push_back(cidade);
     }
 
-    int melhorComprimentoThread;
     float melhorComprimento = comprimento(cidades, t.quantidade);
 
     // Gero 10N solucoes vizinhas
     // se for possível inverter a ordem de visitação de duas cidades e isso melhorar a solução então faça a troca
     // se for possivel trocar a ordem e melhorar a solução, faça a troca
     // paralelizando a geração das soluções
-    #pragma omp parallel private(melhorComprimentoThread)
+    #pragma omp parallel
     {
     #pragma omp parallel for
         for (int i = 0; i < 10 * t.quantidade; i++)
@@ -114,11 +113,13 @@ int main(){
                     }
                 }
             }
-            #pragma omp critical
-            {
-                if (tour.comprimento < melhorComprimento){
-                    melhorComprimento = tour.comprimento;
-                    melhorTour = tour;
+            if (tour.comprimento < melhorComprimento){
+                #pragma omp critical
+                {
+                    if (tour.comprimento < melhorComprimento){
+                        melhorComprimento = tour.comprimento;
+                        melhorTour = tour;
+                    }
                 }
             }
 
