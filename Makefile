@@ -1,6 +1,7 @@
 CC = g++
 CFLAGS = -O3 -Wall -pedantic -std=c++11
 
+
 heuristico: heuristico.o funcoes.o 
 	$(CC) $(CFLAGS) -o heuristico heuristico.o funcoes.o
 

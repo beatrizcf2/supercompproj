@@ -15,7 +15,7 @@ struct Tour
 {
     float comprimento = 0;
     int quantidade; // quantidade de cidades
-    int qualidade = 0;
+    int qualidade = 1;
     vector<Cidade> visitadas;
 };
 
@@ -36,9 +36,10 @@ float comprimento(Tour t)
     return comprimento;
 }
 
+
 void returnOutput(Tour tour){
     // output
-    cout << tour.comprimento << " " << 0 << endl;
+    cout << tour.comprimento << " " << tour.qualidade << endl;
     for (int i = 0; i < tour.visitadas.size(); i++)
     {
         cout << tour.visitadas[i].indice << " ";
@@ -90,6 +91,9 @@ int main(){
     // Adiciono todas as cidades na lista de cidades possiveis
     leCidades(cidades, tour.quantidade);
 
+
+    vector<int> ids;
+
     //assumo que o melhor tour é o primeiro, a principio
     Tour melhorTour;
     melhorTour.quantidade = tour.quantidade;
@@ -97,9 +101,13 @@ int main(){
     melhorTour.comprimento = comprimento(melhorTour);
 
     int n = 0; // numero de solucoes possiveis
+    
+    tour.visitadas.push_back(cidades[0]);
+    cidades.erase(cidades.begin());
 
     // Faço a busca exaustiva
     buscaExaustiva(cidades, tour, melhorTour, n);
+    
 
     // Retorno output do melhor tour
     returnOutput(melhorTour);
